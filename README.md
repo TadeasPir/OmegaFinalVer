@@ -45,7 +45,7 @@ This Flask application provides an API endpoint to predict outcomes using a pre-
 4. **Directory Structure**  
    Ensure your project structure looks similar to:
    ```plaintext
-   project_directory/
+   app/
    ├── app.py
    ├── config.yaml
    ├── models/
@@ -59,6 +59,7 @@ This Flask application provides an API endpoint to predict outcomes using a pre-
 Run the Flask application by executing:
 
 ```bash
+cd app
 python app.py
 ```
 
