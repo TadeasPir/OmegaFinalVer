@@ -62,7 +62,7 @@ Run the Flask application by executing:
 python app.py
 ```
 
-The server will start on `http://127.0.0.1:5000` with debug mode enabled.
+The server will start on `http://127.0.0.1:5000`.
 can be changed in config.yaml
 example config:
 ```yaml
