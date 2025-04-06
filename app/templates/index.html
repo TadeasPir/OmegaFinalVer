@@ -37,19 +37,19 @@
                                 <h5>Price & Volume</h5>
                                 <div class="mb-3">
                                     <label for="Volume" class="form-label">Volume</label>
-                                    <input type="number" class="form-control" id="Volume" name="Volume" step="any" required>
+                                    <input type="number" class="form-control" id="Volume" name="Volume" step="any" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="Daily_Return" class="form-label">Daily Return</label>
-                                    <input type="number" class="form-control" id="Daily_Return" name="Daily_Return" step="0.001" required>
+                                    <input type="number" class="form-control" id="Daily_Return" name="Daily_Return" step="0.001" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="Volatility_14d" class="form-label">Volatility (14d)</label>
-                                    <input type="number" class="form-control" id="Volatility_14d" name="Volatility_14d" step="0.001" required>
+                                    <input type="number" class="form-control" id="Volatility_14d" name="Volatility_14d" step="0.001" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="marketCap" class="form-label">Market Cap</label>
-                                    <input type="number" class="form-control" id="marketCap" name="marketCap" step="any" required>
+                                    <input type="number" class="form-control" id="marketCap" name="marketCap" step="any" min="0" max="1000000000000000000000000000" required>
                                 </div>
                             </div>
                         </div>
@@ -59,19 +59,19 @@
                                 <h5>Moving Averages & RSI</h5>
                                 <div class="mb-3">
                                     <label for="MA5" class="form-label">MA5</label>
-                                    <input type="number" class="form-control" id="MA5" name="MA5" step="0.01" required>
+                                    <input type="number" class="form-control" id="MA5" name="MA5" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="MA20" class="form-label">MA20</label>
-                                    <input type="number" class="form-control" id="MA20" name="MA20" step="0.01" required>
+                                    <input type="number" class="form-control" id="MA20" name="MA20" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="MA50" class="form-label">MA50</label>
-                                    <input type="number" class="form-control" id="MA50" name="MA50" step="0.01" required>
+                                    <input type="number" class="form-control" id="MA50" name="MA50" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="RSI" class="form-label">RSI</label>
-                                    <input type="number" class="form-control" id="RSI" name="RSI" step="0.01" required>
+                                    <input type="number" class="form-control" id="RSI" name="RSI" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                             </div>
 
@@ -97,19 +97,19 @@
                                 <h5>Bollinger Bands</h5>
                                 <div class="mb-3">
                                     <label for="BB_Middle" class="form-label">BB Middle</label>
-                                    <input type="number" class="form-control" id="BB_Middle" name="BB_Middle" step="0.01" required>
+                                    <input type="number" class="form-control" id="BB_Middle" name="BB_Middle" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="BB_Std" class="form-label">BB Std</label>
-                                    <input type="number" class="form-control" id="BB_Std" name="BB_Std" step="0.01" required>
+                                    <input type="number" class="form-control" id="BB_Std" name="BB_Std" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="BB_Upper" class="form-label">BB Upper</label>
-                                    <input type="number" class="form-control" id="BB_Upper" name="BB_Upper" step="0.01" required>
+                                    <input type="number" class="form-control" id="BB_Upper" name="BB_Upper" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="BB_Lower" class="form-label">BB Lower</label>
-                                    <input type="number" class="form-control" id="BB_Lower" name="BB_Lower" step="0.01" required>
+                                    <input type="number" class="form-control" id="BB_Lower" name="BB_Lower" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                             </div>
 
@@ -117,19 +117,19 @@
                                 <h5>MACD</h5>
                                 <div class="mb-3">
                                     <label for="EMA12" class="form-label">EMA12</label>
-                                    <input type="number" class="form-control" id="EMA12" name="EMA12" step="0.01" required>
+                                    <input type="number" class="form-control" id="EMA12" name="EMA12" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="EMA26" class="form-label">EMA26</label>
-                                    <input type="number" class="form-control" id="EMA26" name="EMA26" step="0.01" required>
+                                    <input type="number" class="form-control" id="EMA26" name="EMA26" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="MACD" class="form-label">MACD</label>
-                                    <input type="number" class="form-control" id="MACD" name="MACD" step="0.01" required>
+                                    <input type="number" class="form-control" id="MACD" name="MACD" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="MACD_Signal" class="form-label">MACD Signal</label>
-                                    <input type="number" class="form-control" id="MACD_Signal" name="MACD_Signal" step="0.01" required>
+                                    <input type="number" class="form-control" id="MACD_Signal" name="MACD_Signal" step="0.01" min="0" max="1000000000000000000000000000" required>
                                 </div>
                             </div>
                         </div>
@@ -228,15 +228,15 @@
                         resultBox.style.display = 'block';
                         const prediction = result.prediction[0];
 
-                        // Display prediction result with interpretation
-                        let resultText = `<strong>Prediction: ${prediction}</strong><br>`;
-                        if (prediction === 1) {
-                            resultText += '<div class="alert alert-success mt-2">The model predicts an UPWARD trend for the stock.</div>';
-                        } else {
-                            resultText += '<div class="alert alert-danger mt-2">The model predicts a DOWNWARD trend for the stock.</div>';
-                        }
+                        // Format the prediction as USD with max 3 decimal places
+                        const formattedValue = new Intl.NumberFormat('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 3
+                        }).format(prediction);
 
-                        predictionResult.innerHTML = resultText;
+                        predictionResult.innerHTML = `<strong>Predicted Value: ${formattedValue}</strong>`;
                     } else {
                         // Show error
                         errorBox.style.display = 'block';
