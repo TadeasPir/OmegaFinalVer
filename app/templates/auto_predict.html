@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Stock Prediction</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .prediction-card {
+            transition: all 0.3s ease;
+        }
+        .prediction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .feature-importance {
+            height: 300px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="fw-bold">Weekly Stock Prediction</h1>
+                <p class="lead">Automatically predict stock movement one week into the future</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="/" class="btn btn-outline-secondary">Back to Manual Prediction</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Stock Selection</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="stockForm">
+                            <div class="mb-3">
+                                <label for="stockTicker" class="form-label">Enter Stock Ticker</label>
+                                <input type="text" class="form-control" id="stockTicker" placeholder="e.g., AAPL">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Or select from popular stocks</label>
+                                <select class="form-select" id="popularStocks">
+                                    <option value="">Select a stock</option>
+                                    <option value="AAPL">Apple (AAPL)</option>
+                                    <option value="MSFT">Microsoft (MSFT)</option>
+                                    <option value="GOOGL">Alphabet (GOOGL)</option>
+                                    <option value="AMZN">Amazon (AMZN)</option>
+                                    <option value="TSLA">Tesla (TSLA)</option>
+                                    <option value="META">Meta (META)</option>
+                                    <option value="NVDA">NVIDIA (NVDA)</option>
+                                    <option value="JPM">JPMorgan Chase (JPM)</option>
+                                </select>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">Generate Prediction</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h4 class="mb-0">Data Sources</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="useMarketData" checked>
+                            <label class="form-check-label" for="useMarketData">Market Data</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="useTechnicalIndicators" checked>
+                            <label class="form-check-label" for="useTechnicalIndicators">Technical Indicators</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="useSentimentAnalysis" checked>
+                            <label class="form-check-label" for="useSentimentAnalysis">Sentiment Analysis</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="useNewsData" checked>
+                            <label class="form-check-label" for="useNewsData">News Data</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <!-- Loader -->
+                <div id="loader" class="loader"></div>
+
+                <!-- Error message -->
+                <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+
+                <!-- Results section -->
+                <div id="results" style="display: none;">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0" id="stockName">Stock Prediction</h4>
+                            <span class="badge bg-primary" id="lastUpdated"></span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card prediction-card mb-3">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Current Price</h5>
+                                            <h2 id="currentPrice" class="display-5 fw-bold">--</h2>
+                                            <p class="text-muted" id="priceChange">--</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card prediction-card">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">One Week Prediction</h5>
+                                            <h2 id="predictedTrend" class="display-5 fw-bold">--</h2>
+                                            <p class="text-muted" id="confidenceScore">--</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <h5>Price Chart & Prediction</h5>
+                                <canvas id="priceChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card shadow-sm">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Key Indicators</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <td>RSI (14)</td>
+                                                <td id="rsiValue" class="text-end">--</td>
+                                            </tr>
+                                            <tr>
+                                                <td>MACD</td>
+                                                <td id="macdValue" class="text-end">--</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Bollinger Bands</td>
+                                                <td id="bbValue" class="text-end">--</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Volume (Avg)</td>
+                                                <td id="volumeValue" class="text-end">--</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Volatility (14d)</td>
+                                                <td id="volatilityValue" class="text-end">--</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card shadow-sm">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Sentiment Analysis</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="sentimentChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Feature Importance</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="featureImportanceChart" class="feature-importance"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const stockForm = document.getElementById('stockForm');
+            const popularStocks = document.getElementById('popularStocks');
+            const stockTicker = document.getElementById('stockTicker');
+            const loader = document.getElementById('loader');
+            const results = document.getElementById('results');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Sync the dropdown and text input
+            popularStocks.addEventListener('change', function() {
+                if (this.value) {
+                    stockTicker.value = this.value;
+                }
+            });
+
+            stockTicker.addEventListener('input', function() {
+                popularStocks.value = '';
+            });
+
+            let priceChart = null;
+            let sentimentChart = null;
+            let featureImportanceChart = null;
+
+            stockForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                if (!stockTicker.value) {
+                    errorMessage.textContent = 'Please enter a stock ticker';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                // Show loader, hide results and errors
+                loader.style.display = 'block';
+                results.style.display = 'none';
+                errorMessage.style.display = 'none';
+
+                // Collect data sources flags
+                const dataSources = {
+                    useMarketData: document.getElementById('useMarketData').checked,
+                    useTechnicalIndicators: document.getElementById('useTechnicalIndicators').checked,
+                    useSentimentAnalysis: document.getElementById('useSentimentAnalysis').checked,
+                    useNewsData: document.getElementById('useNewsData').checked
+                };
+
+                try {
+                    // This would be the actual API call to your backend
+                    // For demo purposes, I'll simulate a response after a delay
+
+                    // Simulate API call
+                    // In a real application, replace this with:
+                    /*
+                    const response = await fetch('/auto_predict', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            ticker: stockTicker.value,
+                            dataSources: dataSources
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch prediction data');
+                    }
+
+                    const data = await response.json();
+                    */
+
+                    // Simulate API delay
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    // Mock data for demonstration
+                    const data = getMockData(stockTicker.value);
+
+                    // Hide loader and show results
+                    loader.style.display = 'none';
+                    results.style.display = 'block';
+
+                    // Update the UI with the prediction data
+                    updateUI(data);
+
+                } catch (error) {
+                    loader.style.display = 'none';
+                    errorMessage.textContent = error.message || 'Failed to generate prediction';
+                    errorMessage.style.display = 'block';
+                    console.error('Error:', error);
+                }
+            });
+
+            function updateUI(data) {
+                // Update stock info
+                document.getElementById('stockName').textContent = `${data.stockName} (${data.ticker})`;
+                document.getElementById('lastUpdated').textContent = `Last updated: ${data.lastUpdated}`;
+
+                // Update current price
+                document.getElementById('currentPrice').textContent = `$${data.currentPrice.toFixed(2)}`;
+
+                // Format price change with color
+                const priceChangeEl = document.getElementById('priceChange');
+                const changePercent = data.priceChangePercent;
+                const changeText = changePercent >= 0 ?
+                    `+$${data.priceChange.toFixed(2)} (${changePercent.toFixed(2)}%)` :
+                    `-$${Math.abs(data.priceChange).toFixed(2)} (${changePercent.toFixed(2)}%)`;
+                priceChangeEl.textContent = changeText;
+                priceChangeEl.className = changePercent >= 0 ? 'text-success' : 'text-danger';
+
+                // Update prediction
+                const predictedTrendEl = document.getElementById('predictedTrend');
+                if (data.prediction === 1) {
+                    predictedTrendEl.textContent = '↑ Bullish';
+                    predictedTrendEl.className = 'display-5 fw-bold text-success';
+                } else {
+                    predictedTrendEl.textContent = '↓ Bearish';
+                    predictedTrendEl.className = 'display-5 fw-bold text-danger';
+                }
+
+                document.getElementById('confidenceScore').textContent = `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+
+                // Update indicator values
+                document.getElementById('rsiValue').textContent = data.indicators.rsi.toFixed(2);
+                document.getElementById('macdValue').textContent = data.indicators.macd.toFixed(2);
+                document.getElementById('bbValue').textContent = data.indicators.bb;
+                document.getElementById('volumeValue').textContent = formatNumber(data.indicators.volume);
+                document.getElementById('volatilityValue').textContent = `${(data.indicators.volatility * 100).toFixed(2)}%`;
+
+                // Create or update charts
+                createPriceChart(data.priceHistory, data.predictedPrices);
+                createSentimentChart(data.sentiment);
+                createFeatureImportanceChart(data.featureImportance);
+            }
+
+            function createPriceChart(priceHistory, predictedPrices) {
+                const ctx = document.getElementById('priceChart').getContext('2d');
+
+                // Destroy existing chart if it exists
+                if (priceChart) {
+                    priceChart.destroy();
+                }
+
+                // Combine historical and predicted data
+                const labels = [...priceHistory.dates, ...predictedPrices.dates];
+                const historicalData = [...priceHistory.prices, ...Array(predictedPrices.prices.length).fill(null)];
+                const predictedData = [...Array(priceHistory.prices.length).fill(null), ...predictedPrices.prices];
+
+                priceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Historical Price',
+                                data: historicalData,
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.1,
+                                fill: false
+                            },
+                            {
+                                label: 'Predicted Price',
+                                data: predictedData,
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                tension: 0.1,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Price ($)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function createSentimentChart(sentiment) {
+                const ctx = document.getElementById('sentimentChart').getContext('2d');
+
+                // Destroy existing chart if it exists
+                if (sentimentChart) {
+                    sentimentChart.destroy();
+                }
+
+                sentimentChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Positive', 'Neutral', 'Negative'],
+                        datasets: [{
+                            data: [
+                                sentiment.positive,
+                                sentiment.neutral,
+                                sentiment.negative
+                            ],
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.7)',
+                                'rgba(201, 203, 207, 0.7)',
+                                'rgba(255, 99, 132, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(201, 203, 207, 1)',
+                                'rgba(255, 99, 132, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw;
+                                        const percentage = Math.round(value * 100);
+                                        return `${label}: ${percentage}%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function createFeatureImportanceChart(featureImportance) {
+                const ctx = document.getElementById('featureImportanceChart').getContext('2d');
+
+                // Destroy existing chart if it exists
+                if (featureImportanceChart) {
+                    featureImportanceChart.destroy();
+                }
+
+                // Sort feature importance
+                const sortedFeatures = Object.entries(featureImportance)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10); // Top 10 features
+
+                const labels = sortedFeatures.map(item => item[0]);
+                const values = sortedFeatures.map(item => item[1]);
+
+                featureImportanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Feature Importance',
+                            data: values,
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        return `Importance: ${(value * 100).toFixed(1)}%`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: Math.max(...values) * 1.1,
+                                title: {
+                                    display: true,
+                                    text: 'Importance'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Helper function to format large numbers
+            function formatNumber(num) {
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + 'M';
+                }
+                if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                }
+                return num.toString();
+            }
+
+            // Mock data generator for demonstration
+            function getMockData(ticker) {
+                const now = new Date();
+                const dateStr = now.toLocaleString();
+
+                // Generate dates for the past 30 days
+                const dates = [];
+                for (let i = 30; i >= 1; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    dates.push(date.toLocaleDateString("en-US", { month: 'short', day: 'numeric' }));
+                }
+
+                // Generate dates for the next 7 days
+                const futureDates = [];
+                for (let i = 1; i <= 7; i++) {
+                    const date = new Date();
+                    date.setDate(date.getDate() + i);
+                    futureDates.push(date.toLocaleDateString("en-US", { month: 'short', day: 'numeric' }));
+                }
+
+                // Generate random historical prices with a trend
+                const basePrice = 100 + Math.random() * 200;
+                const priceVolatility = 2;
+                const trend = (Math.random() - 0.3) * 0.2; // Slight bias towards positive trends
+
+                let currentPrice = basePrice;
+                const prices = [];
+
+                for (let i = 0; i < 30; i++) {
+                    currentPrice = currentPrice * (1 + trend) + (Math.random() - 0.5) * priceVolatility;
+                    prices.push(currentPrice);
+                }
+
+                // Determine prediction (1 for up, 0 for down) with some randomness
+                // but biased by the recent trend
+                const recentTrend = (prices[prices.length - 1] - prices[prices.length - 5]) / prices[prices.length - 5];
+                const prediction = Math.random() < (0.5 + recentTrend * 5) ? 1 : 0;
+
+                // Generate future prices based on prediction
+                const futurePrices = [];
+                let lastPrice = prices[prices.length - 1];
+
+                const futureVolatility = priceVolatility * 1.5;
+                const futureTrend = prediction === 1 ? Math.abs(trend) * 1.5 : -Math.abs(trend) * 1.5;
+
+                for (let i = 0; i < 7; i++) {
+                    lastPrice = lastPrice * (1 + futureTrend) + (Math.random() - 0.5) * futureVolatility;
+                    futurePrices.push(lastPrice);
+                }
+
+                return {
+                    ticker: ticker,
+                    stockName: {
+                        'AAPL': 'Apple Inc.',
+                        'MSFT': 'Microsoft Corporation',
+                        'GOOGL': 'Alphabet Inc.',
+                        'AMZN': 'Amazon.com Inc.',
+                        'TSLA': 'Tesla, Inc.',
+                        'META': 'Meta Platforms, Inc.',
+                        'NVDA': 'NVIDIA Corporation',
+                        'JPM': 'JPMorgan Chase & Co.'
+                    }[ticker] || `${ticker} Corp.`,
+                    lastUpdated: dateStr,
+                    currentPrice: prices[prices.length - 1],
+                    priceChange: prices[prices.length - 1] - prices[prices.length - 2],
+                    priceChangePercent: ((prices[prices.length - 1] - prices[prices.length - 2]) / prices[prices.length - 2]) * 100,
+                    prediction: prediction,
+                    confidence: 0.7 + Math.random() * 0.25, // Random confidence between 70% and 95%
+                    priceHistory: {
+                        dates: dates,
+                        prices: prices
+                    },
+                    predictedPrices: {
+                        dates: futureDates,
+                        prices: futurePrices
+                    },
+                    indicators: {
+                        rsi: 30 + Math.random() * 40, // Random RSI between 30 and 70
+                        macd: (Math.random() - 0.5) * 5,
+                        bb: prediction === 1 ? 'Near upper band' : 'Near lower band',
+                        volume: 500000 + Math.random() * 5000000,
+                        volatility: 0.01 + Math.random() * 0.04
+                    },
+                    sentiment: {
+                        positive: 0.3 + Math.random() * 0.4,
+                        neutral: 0.2 + Math.random() * 0.3,
+                        negative: 0.1 + Math.random() * 0.2
+                    },
+                    featureImportance: {
+                        'Volume': Math.random() * 0.8 + 0.1,
+                        'RSI': Math.random() * 0.8 + 0.1,
+                        'MACD': Math.random() * 0.8 + 0.1,
+                        'Bollinger Bands': Math.random() * 0.8 + 0.1,
+                        'MA50': Math.random() * 0.8 + 0.1,
+                        'Sentiment': Math.random() * 0.8 + 0.1,
+                        'Volatility': Math.random() * 0.8 + 0.1,
+                        'Market Cap': Math.random() * 0.8 + 0.1,
+                        'P/E Ratio': Math.random() * 0.8 + 0.1,
+                        'Sector Performance': Math.random() * 0.8 + 0.1,
+                        'Dividend Yield': Math.random() * 0.8 + 0.1,
+                        'EMA12': Math.random() * 0.8 + 0.1,
+                        'EMA26': Math.random() * 0.8 + 0.1
+                    }
+                };
+            }
+        });
+    </script>
+</body>
+</html>
