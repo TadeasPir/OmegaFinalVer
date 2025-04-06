@@ -1,5 +1,5 @@
 
-# ML Prediction
+# APPL stoxx predictor
 
 This Flask application provides an API endpoint to predict outcomes using a pre-trained Gradient Boosting model. The app has a homepage wiht UI for predictions.
 
